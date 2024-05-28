@@ -21,6 +21,7 @@ Extract = SparkSubmitOperator(
     application="/spark-scripts/spark-example.py",
     conn_id="spark_main",
     task_id="spark_submit_task",
+    jars="/opt/airflow/postgresql-42.2.18.jar",
     dag=spark_dag,
 )
 
