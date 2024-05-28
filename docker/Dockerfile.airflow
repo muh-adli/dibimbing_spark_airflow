@@ -1,7 +1,7 @@
 FROM apache/airflow:2.8.2-python3.9
 USER root
 
-# Install OpenJDK-17
+# Install OpenJDK-11
 RUN apt update && \
     apt-get install -y openjdk-17-jdk && \
     apt-get install -y ant && \
@@ -15,7 +15,6 @@ RUN export JAVA_HOME
 USER airflow
 
 RUN pip install \
-    --no-cache-dir \
     lxml \
     pyspark==3.3.2 \
     apache-airflow-providers-apache-spark \
