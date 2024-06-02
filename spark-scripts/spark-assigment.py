@@ -4,6 +4,10 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType
+from pyspark.sql.functions import window, col
+
+
 dotenv_path = Path("/opt/app/.env")
 load_dotenv(dotenv_path=dotenv_path)
 
@@ -23,7 +27,17 @@ sparkcontext = pyspark.SparkContext.getOrCreate(
 )
 sparkcontext.setLogLevel("WARN")
 spark = pyspark.sql.SparkSession(sparkcontext.getOrCreate())
+
+dataSchema = StructType([
+        StructField("order_id", StringType(), True),
+        StructField("customer_id", IntegerType(), True),
+        StructField("furniture", StringType(), True),
+        StructField("color", StringType(), True),
+        StructField("price", IntegerType(), True),
+        StructField("ts", LongType(), True)
+    ])
 spark.conf.set('spark.sql.shuffle.partitions', 5)
+
 stream_df = (
     spark.readStream.format("kafka")
     .option("kafka.bootstrap.servers", f"{kafka_host}:9092")
@@ -32,12 +46,10 @@ stream_df = (
     .load()
 )
 
-query = (
+(
     stream_df.selectExpr("CAST(value AS STRING)")
     .writeStream.format("console")
     .outputMode("append")
-    .trigger(processingTime="5 seconds")
     .start()
+    .awaitTermination()
 )
-# Wait for the streaming to finish
-query.awaitTermination()
